@@ -1,13 +1,22 @@
+#![forbid(unsafe_code)]
+
 use figment::{error::Kind, providers::Env, value::Dict, Provider};
-use std::{collections::HashSet, path::Path};
+use std::collections::HashSet;
 
 pub struct FileEnv {
     env: Env,
+    suffix: String,
 }
 
 impl FileEnv {
-    pub fn new(env: Env) -> Self {
-        Self { env }
+    pub fn from_env(env: Env) -> Self {
+        Self::from_env_with_suffix(env, "_file")
+    }
+    pub fn from_env_with_suffix(env: Env, suffix: &str) -> Self {
+        Self {
+            env,
+            suffix: suffix.to_lowercase(),
+        }
     }
 }
 
@@ -23,20 +32,14 @@ impl Provider for FileEnv {
         let seen_file_keys = {
             let mut seen_file_keys = HashSet::<String>::new();
             for (key, file_name) in self.env.iter() {
-                match key.as_str().strip_suffix("_file") {
-                    None => continue,
-                    Some(stripped_key) => {
-                        if !Path::exists(Path::new(&file_name)) {
-                            continue;
-                        }
-                        let contents = std::fs::read_to_string(file_name)
-                            .map_err(|e| Kind::Message(e.to_string()))?;
-                        dict.insert(
-                            stripped_key.to_string(),
-                            contents.parse().expect("infallible"),
-                        );
-                        seen_file_keys.insert(key.to_string());
-                    }
+                if let Some(stripped_key) = key.as_str().strip_suffix(&self.suffix) {
+                    let contents = std::fs::read_to_string(file_name)
+                        .map_err(|e| Kind::Message(e.to_string()))?;
+                    dict.insert(
+                        stripped_key.to_string(),
+                        contents.parse().expect("infallible"),
+                    );
+                    seen_file_keys.insert(key.to_string());
                 }
             }
             seen_file_keys
@@ -65,11 +68,11 @@ mod tests {
     #[test]
     fn with_env() {
         figment::Jail::expect_with(|jail| {
-            jail.set_env("FOO", "bar");
-            jail.set_env("BAZ", "put");
+            jail.set_env("FIGMENT_TEST_FOO", "bar");
+            jail.set_env("FIGMENT_TEST_BAZ", "put");
 
             let config = figment::Figment::new()
-                .merge(FileEnv::new(Env::raw()))
+                .merge(FileEnv::from_env(Env::prefixed("FIGMENT_TEST_")))
                 .extract::<Config>()?;
 
             assert_eq!(config.foo, "bar");
@@ -80,11 +83,11 @@ mod tests {
     #[test]
     fn with_file() {
         figment::Jail::expect_with(|jail| {
-            jail.set_env("FOO_FILE", "secret");
+            jail.set_env("FIGMENT_TEST_FOO_FILE", "secret");
             jail.create_file("secret", "bar")?;
 
             let config = figment::Figment::new()
-                .merge(FileEnv::new(Env::raw()))
+                .merge(FileEnv::from_env(Env::prefixed("FIGMENT_TEST_")))
                 .extract::<Config>()?;
 
             assert_eq!(config.foo, "bar");
@@ -95,12 +98,12 @@ mod tests {
     #[test]
     fn with_both() {
         figment::Jail::expect_with(|jail| {
-            jail.set_env("FOO_FILE", "secret");
-            jail.set_env("FOO", "env");
+            jail.set_env("FIGMENT_TEST_FOO_FILE", "secret");
+            jail.set_env("FIGMENT_TEST_FOO", "env");
             jail.create_file("secret", "file")?;
 
             let config = figment::Figment::new()
-                .merge(FileEnv::new(Env::raw()))
+                .merge(FileEnv::from_env(Env::prefixed("FIGMENT_TEST_")))
                 .extract::<Config>()?;
 
             assert_eq!(config.foo, "env");
