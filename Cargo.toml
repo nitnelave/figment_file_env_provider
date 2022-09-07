@@ -11,4 +11,8 @@ repository = "https://github.com/nitnelave/figment_file_env_provider"
 
 [dependencies.figment]
 version = "*"
-features = ["env"]
+features = ["env", "test"]
+
+[dev_dependencies.serde]
+version = "*"
+features = ["derive"]
