@@ -102,8 +102,7 @@
 //! # });
 //! ```
 
-use figment::{error::Kind, value::Dict};
-pub use figment::{providers::Env, Provider};
+use figment::{error::Kind, providers::Env, value::Dict, Provider};
 use std::collections::HashSet;
 
 /// Provider that reads config values from the environment or from files pointed to by the
