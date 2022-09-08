@@ -1,3 +1,4 @@
+#![deny(missing_docs)]
 #![forbid(unsafe_code)]
 
 //! Figment provider for optionally file-based env config values.
