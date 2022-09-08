@@ -8,6 +8,8 @@ license = "MIT"
 keywords = ["figment", "env", "file"]
 categories = ["command-line-interface", "config"]
 repository = "https://github.com/nitnelave/figment_file_env_provider"
+homepage = "https://github.com/nitnelave/figment_file_env_provider"
+documentation = "https://docs.rs/figment_file_env_provider"
 
 [dependencies.figment]
 version = "*"
