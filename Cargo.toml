@@ -17,7 +17,7 @@ include = [
 ]
 
 [dependencies.figment]
-version = "*"
+version = "^0.10"
 features = ["env", "test"]
 
 [dev_dependencies.serde]
