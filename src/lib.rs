@@ -1,7 +1,7 @@
 #![deny(missing_docs)]
 #![forbid(unsafe_code)]
 
-//! Figment provider for optionally file-based env config values.
+//! Figment [`figment::Provider`] for optionally file-based env config values.
 //!
 //! ```rust
 //! use serde::Deserialize;
@@ -27,7 +27,7 @@
 //!
 //! # Overview
 //!
-//! This crate contains the [`FileEnv`] provider for [`figment::Figment`], to allow loading
+//! This crate contains the [`FileEnv`] provider for [`figment`], to allow loading
 //! configuration values from either environment variables or files. This is especially useful
 //! for secret management in combination with containers.
 //!
@@ -35,12 +35,14 @@
 //! variable `API_KEY=abc123deadbeef`, or you could write that API key to a file
 //! `/secrets/api_key` and pass the env variable `API_KEY_FILE=/secrets/api_key`.
 //!
+//! Note that if both are specified, the non-`_FILE` one wins.
+//!
 //! # Recommendations
 //!
 //! ## Namespacing and restricting the variables read
 //!
 //! The provider will try to read any environment variable that ends with `_FILE` (or the custom
-//! suffix} and will error if the file cannot be read. As such, it is usually necessary to have a
+//! suffix) and will error if the file cannot be read. As such, it is usually necessary to have a
 //! namespace for the environment variables in the form of a unique prefix, to avoid conficts or
 //! unexpected interactions: `FileEnv::from_env(Env::prefixed("MY_APP_"))` (see
 //! [`figment::providers::Env::prefixed`]).
@@ -129,7 +131,7 @@ use std::collections::HashSet;
 /// // - `APP_FOO=foo_value`
 /// // - `APP_BAR_FILE=./secret_file`
 /// //
-/// // Contents of the file `"./secret_file"`: `"bar_value"`
+/// // Contents of the file `./secret_file`: `bar_value`
 /// let config: Config = Figment::new()
 ///     .merge(FileEnv::from_env(Env::prefixed("APP_")))
 ///     .extract()?;
@@ -144,7 +146,9 @@ pub struct FileEnv {
     suffix: String,
 }
 
-/// A [`FileEnv`] that cannot have its suffix changed anymore. See [`FileEnv::with_suffix`].
+/// A [`FileEnv`] that cannot have its suffix changed anymore.
+///
+/// See [`FileEnv::with_suffix`].
 #[derive(Clone)]
 pub struct FileEnvWithRestrictions {
     file_env: FileEnv,
@@ -160,7 +164,8 @@ impl FileEnv {
     /// should not be used. Use [`FileEnv::only`] and [`FileEnv::ignore`] instead.
     ///
     /// ```rust
-    /// use figment_file_env_provider::{Env, FileEnv};
+    /// use figment::providers::Env;
+    /// use figment_file_env_provider::FileEnv;
     /// let file_env = FileEnv::from_env(Env::prefixed("MY_APP_"));
     /// ```
     pub fn from_env(env: Env) -> Self {
@@ -186,8 +191,8 @@ impl FileEnv {
     /// # figment::Jail::expect_with(|jail| {
     /// # jail.create_file("secret_file", "32")?;
     /// # jail.set_env("APP_FOO_PATH", "secret_file");
-    /// // ENV: "APP_FOO_PATH=./secret_file"
-    /// // Contents of "./secret_file": "32"
+    /// // ENV: `APP_FOO_PATH=./secret_file`
+    /// // Contents of `./secret_file`: `32`
     /// let config: Config = Figment::new()
     ///     .merge(FileEnv::from_env(Env::prefixed("APP_")).with_suffix("_PATH"))
     ///     .extract()?;
@@ -212,7 +217,8 @@ impl FileEnv {
     /// the "_FILE" variants won't be supported.
     ///
     /// ```rust
-    /// use figment_file_env_provider::{Env, FileEnv};
+    /// use figment::providers::Env;
+    /// use figment_file_env_provider::FileEnv;
     /// // This provider will look at the variables FOO, FOO_FILE, BAR and BAR_FILE.
     /// let file_env = FileEnv::from_env(Env::prefixed("MY_APP_")).only(&["foo", "bar"]);
     /// ```
@@ -227,7 +233,8 @@ impl FileEnv {
     /// the "_FILE" variants won't be ignored.
     ///
     /// ```rust
-    /// use figment_file_env_provider::{Env, FileEnv};
+    /// use figment::providers::Env;
+    /// use figment_file_env_provider::FileEnv;
     /// // This provider will not look at the variables FOO, FOO_FILE, BAR and BAR_FILE.
     /// let file_env = FileEnv::from_env(Env::prefixed("MY_APP_")).ignore(&["foo", "bar"]);
     /// ```
