@@ -45,7 +45,7 @@ Add the following to your `Cargo.toml`:
 ```toml
 [dependencies]
 figment = { version = "0.10", features = ["env"] }
-figment_file_env_provider = { version = "0.1" }
+figment_file_env_provider = { version = "0.2" }
 ```
 
 ## License
