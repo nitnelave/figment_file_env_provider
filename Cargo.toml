@@ -10,6 +10,11 @@ categories = ["command-line-interface", "config"]
 repository = "https://github.com/nitnelave/figment_file_env_provider"
 homepage = "https://github.com/nitnelave/figment_file_env_provider"
 documentation = "https://docs.rs/figment_file_env_provider"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+    "README.md",
+]
 
 [dependencies.figment]
 version = "*"
