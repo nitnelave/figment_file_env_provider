@@ -20,15 +20,9 @@ struct Config {
   foo: u64,
 }
 
-# figment::Jail::expect_with(|jail| {
-# jail.create_file("secret_file", "32")?;
-# jail.set_env("APP_FROBNICATE", "with gusto");
-# jail.set_env("APP_FOO_FILE", "secret_file");
 let config: Config = Figment::new()
     .merge(FileEnv::from_env(Env::prefixed("APP_")))
     .extract()?;
-# Ok(())
-# });
 ```
 
 # Overview
