@@ -1,6 +1,6 @@
 [package]
 name = "figment_file_env_provider"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["nitnelave <valentin@tolmer.fr>"]
 description = "A Figment provider to read from env or files"
